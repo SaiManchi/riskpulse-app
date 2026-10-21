@@ -1,0 +1,43 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 868 >>
+stream
+BlockFrame, Inc. Information Security & Data Privacy Notice
+Corporate Address: 990 Point of the Pines Dr., Colorado Springs, CO 80919
+
+1. Security Infrastructure & Zero-Trust Framework:
+- Implements EcoSecure Provisioning (ESP) for cryptographic key management in IoT devices.
+- Uses CyberDome for secure communication protocols and zero-trust device verification.
+- Enforces strict digital identity validation across all internal repositories.
+
+2. Data Collection and Privacy Policy:
+- Automatically logs user device characteristics, IP addresses, and browser specifications.
+- Protects personal data collected through sales, events, and marketing.
+- Restricts internal administrative database access using role-based access control.
+
+3. Point of Contact & Security Team:
+- Direct inquiries or breach notices to support@blockframetech.com or info@blockframetech.com.
+
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000192 00000 n 
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+365
+%%EOF
