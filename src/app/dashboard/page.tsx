@@ -5299,90 +5299,113 @@ function SituationalTab({
             </div>
           </div>
 
-          {/* Quick Presentation Switcher: Compare 3 Different Companies */}
-          <div className="bg-gradient-to-r from-gray-900 via-gray-950 to-gray-900 border border-indigo-900/50 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 bg-indigo-950/80 border border-indigo-800/80 px-2.5 py-0.5 rounded-full font-mono">
-                  Live Situational Contrast Demo
+          {/* Quick Presentation Switcher: Compare Different Companies */}
+          <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4 font-sans">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-950/90 border border-indigo-800/70 text-indigo-300 text-[10px] font-mono font-bold uppercase tracking-wider whitespace-nowrap">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Contrast Simulation
                 </span>
-                <span className="text-xs font-extrabold text-white">Compare Company Portfolios:</span>
+                <span className="text-sm font-extrabold text-white whitespace-nowrap">
+                  Compare Company Risk Portfolios
+                </span>
               </div>
-              <p className="text-[11px] text-gray-400 font-medium mt-1">
-                Notice how changing company profiles re-evaluates and dynamically re-ranks all 532 situations.
+              <p className="text-xs text-gray-400 font-medium">
+                Switch profiles to observe how 532 situational threats re-rank in real time based on each company&apos;s financial and cyber posture.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
+
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 shrink-0">
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-acme') : router.push(`/dashboard?client=client-acme&tab=situational`)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-2 ${
+                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
                   activeClient.id === 'client-acme'
                     ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
                 }`}
               >
-                <Factory size={13} className="shrink-0 text-gray-400" />
-                <span>Acme Industrial</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-950/70 text-red-300 font-mono font-bold">Ransomware & Burn</span>
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <Factory size={14} className={activeClient.id === 'client-acme' ? 'text-white' : 'text-gray-400'} />
+                  <span>Acme Industrial</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-950/70 text-red-300 font-mono font-bold whitespace-nowrap">
+                  Ransomware & Burn
+                </span>
               </button>
+
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-apex') : router.push(`/dashboard?client=client-apex&tab=situational`)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-2 ${
+                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
                   activeClient.id === 'client-apex'
                     ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
                 }`}
               >
-                <ShoppingCart size={13} className="shrink-0 text-gray-400" />
-                <span>Apex Retail</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 font-mono font-bold">Supplier Monopoly</span>
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <ShoppingCart size={14} className={activeClient.id === 'client-apex' ? 'text-white' : 'text-gray-400'} />
+                  <span>Apex Retail</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 font-mono font-bold whitespace-nowrap">
+                  Supplier Monopoly
+                </span>
               </button>
+
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-apex-medix') : router.push(`/dashboard?client=client-apex-medix&tab=situational`)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-2 ${
+                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
                   activeClient.id === 'client-apex-medix'
                     ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
                 }`}
               >
-                <Stethoscope size={13} className="shrink-0 text-purple-400" />
-                <span>Medix Diagnostics</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 font-mono font-bold">DPDP & Debt</span>
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <Stethoscope size={14} className={activeClient.id === 'client-apex-medix' ? 'text-white' : 'text-purple-400'} />
+                  <span>Medix Diagnostics</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 font-mono font-bold whitespace-nowrap">
+                  DPDP & Debt
+                </span>
               </button>
+
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-stark') : router.push(`/dashboard?client=client-stark&tab=situational`)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-2 ${
+                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
                   activeClient.id === 'client-stark'
                     ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
                 }`}
               >
-                <Zap size={13} className="shrink-0 text-emerald-400" />
-                <span>Stark Energy</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 font-mono font-bold">Flush & Safe</span>
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <Zap size={14} className={activeClient.id === 'client-stark' ? 'text-white' : 'text-emerald-400'} />
+                  <span>Stark Energy</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 font-mono font-bold whitespace-nowrap">
+                  Flush & Safe
+                </span>
               </button>
             </div>
           </div>
 
           {/* Active Client Evaluation Context Banner */}
-          <div className="bg-gray-900/70 border border-gray-800/80 px-5 py-3 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="bg-gray-900/80 border border-gray-800 px-5 py-3 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-2 text-gray-400">
-              <span className="font-bold text-gray-300">Live Client Baseline:</span>
-              <span className="font-extrabold text-white bg-gray-800 px-2 py-0.5 rounded">{activeClient.name}</span>
+              <span className="font-bold text-gray-300 whitespace-nowrap">Live Client Baseline:</span>
+              <span className="font-extrabold text-white bg-gray-800 px-2 py-0.5 rounded whitespace-nowrap">{activeClient.name}</span>
               <span className="text-gray-600">•</span>
-              <span>Cash: <strong className="text-white">${activeClient.financialMetrics.cash_balance.toLocaleString()}</strong></span>
+              <span className="whitespace-nowrap">Cash: <strong className="text-white">${activeClient.financialMetrics.cash_balance.toLocaleString()}</strong></span>
               <span className="text-gray-600">•</span>
-              <span>Runway: <strong className="text-white">{(computed?.cashRunway ?? 0).toFixed(1)} mo</strong></span>
+              <span className="whitespace-nowrap">Runway: <strong className="text-white">{(computed?.cashRunway ?? 0).toFixed(1)} mo</strong></span>
               <span className="text-gray-600">•</span>
-              <span>MFA: <strong className={activeClient.cyberMetrics.mfa_enabled ? "text-emerald-400" : "text-red-400"}>{activeClient.cyberMetrics.mfa_enabled ? 'Active' : 'Disabled'}</strong></span>
+              <span className="whitespace-nowrap">MFA: <strong className={activeClient.cyberMetrics.mfa_enabled ? "text-emerald-400" : "text-red-400"}>{activeClient.cyberMetrics.mfa_enabled ? 'Active' : 'Disabled'}</strong></span>
               <span className="text-gray-600">•</span>
-              <span>Open CVEs: <strong className={activeClient.cyberMetrics.open_vulnerabilities_count > 0 ? "text-amber-400" : "text-emerald-400"}>{activeClient.cyberMetrics.open_vulnerabilities_count}</strong></span>
+              <span className="whitespace-nowrap">Open CVEs: <strong className={activeClient.cyberMetrics.open_vulnerabilities_count > 0 ? "text-amber-400" : "text-emerald-400"}>{activeClient.cyberMetrics.open_vulnerabilities_count}</strong></span>
             </div>
-            <div className="text-[11px] text-indigo-400 font-bold flex items-center gap-1.5">
+            <div className="text-[11px] text-indigo-400 font-bold flex items-center gap-1.5 whitespace-nowrap">
               <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping inline-block" />
               <span>Dynamic Telemetry Risk Correlation Active</span>
             </div>
