@@ -5300,93 +5300,130 @@ function SituationalTab({
           </div>
 
           {/* Quick Presentation Switcher: Compare Different Companies */}
-          <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4 font-sans">
-            <div className="space-y-1.5">
-              <div className="flex flex-wrap items-center gap-2">
+          <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-xl space-y-4 font-sans overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-800/80 pb-3">
+              <div className="flex items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-950/90 border border-indigo-800/70 text-indigo-300 text-[10px] font-mono font-bold uppercase tracking-wider whitespace-nowrap">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Live Contrast Simulation
                 </span>
-                <span className="text-sm font-extrabold text-white whitespace-nowrap">
+                <h4 className="text-sm font-extrabold text-white">
                   Compare Company Risk Portfolios
-                </span>
+                </h4>
               </div>
               <p className="text-xs text-gray-400 font-medium">
-                Switch profiles to observe how 532 situational threats re-rank in real time based on each company&apos;s financial and cyber posture.
+                Click a company to observe real-time threat re-ranking across all 532 situations.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 shrink-0">
+            {/* 4 Company Switcher Cards - Responsive 4-column grid (never overflows) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+              {/* Button 1: Acme */}
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-acme') : router.push(`/dashboard?client=client-acme&tab=situational`)}
-                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
+                className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all cursor-pointer border flex flex-col justify-between gap-2.5 ${
                   activeClient.id === 'client-acme'
-                    ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    ? 'bg-indigo-600/25 border-indigo-500 text-white shadow-lg shadow-indigo-600/20 ring-1 ring-indigo-500'
+                    : 'bg-gray-950/60 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700 hover:bg-gray-900'
                 }`}
               >
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <Factory size={14} className={activeClient.id === 'client-acme' ? 'text-white' : 'text-gray-400'} />
-                  <span>Acme Industrial</span>
+                <div className="flex items-center justify-between w-full">
+                  <span className="flex items-center gap-2 font-black text-white text-xs truncate">
+                    <Factory size={14} className={activeClient.id === 'client-acme' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Acme Industrial</span>
+                  </span>
+                  {activeClient.id === 'client-acme' && (
+                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping shrink-0" />
+                  )}
                 </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-950/70 text-red-300 font-mono font-bold whitespace-nowrap">
-                  Ransomware & Burn
-                </span>
+                <div className="flex items-center justify-between pt-1.5 border-t border-gray-800/60 text-[10px]">
+                  <span className="text-gray-500 font-mono">Primary Risk:</span>
+                  <span className="px-1.5 py-0.5 rounded bg-red-950/70 text-red-300 font-mono font-bold whitespace-nowrap">
+                    Ransomware & Burn
+                  </span>
+                </div>
               </button>
 
+              {/* Button 2: Apex Retail */}
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-apex') : router.push(`/dashboard?client=client-apex&tab=situational`)}
-                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
+                className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all cursor-pointer border flex flex-col justify-between gap-2.5 ${
                   activeClient.id === 'client-apex'
-                    ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    ? 'bg-indigo-600/25 border-indigo-500 text-white shadow-lg shadow-indigo-600/20 ring-1 ring-indigo-500'
+                    : 'bg-gray-950/60 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700 hover:bg-gray-900'
                 }`}
               >
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <ShoppingCart size={14} className={activeClient.id === 'client-apex' ? 'text-white' : 'text-gray-400'} />
-                  <span>Apex Retail</span>
+                <div className="flex items-center justify-between w-full">
+                  <span className="flex items-center gap-2 font-black text-white text-xs truncate">
+                    <ShoppingCart size={14} className={activeClient.id === 'client-apex' ? 'text-indigo-400' : 'text-gray-400'} />
+                    <span>Apex Retail</span>
+                  </span>
+                  {activeClient.id === 'client-apex' && (
+                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping shrink-0" />
+                  )}
                 </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 font-mono font-bold whitespace-nowrap">
-                  Supplier Monopoly
-                </span>
+                <div className="flex items-center justify-between pt-1.5 border-t border-gray-800/60 text-[10px]">
+                  <span className="text-gray-500 font-mono">Primary Risk:</span>
+                  <span className="px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 font-mono font-bold whitespace-nowrap">
+                    Supplier Monopoly
+                  </span>
+                </div>
               </button>
 
+              {/* Button 3: Medix Diagnostics */}
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-apex-medix') : router.push(`/dashboard?client=client-apex-medix&tab=situational`)}
-                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
+                className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all cursor-pointer border flex flex-col justify-between gap-2.5 ${
                   activeClient.id === 'client-apex-medix'
-                    ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    ? 'bg-indigo-600/25 border-indigo-500 text-white shadow-lg shadow-indigo-600/20 ring-1 ring-indigo-500'
+                    : 'bg-gray-950/60 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700 hover:bg-gray-900'
                 }`}
               >
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <Stethoscope size={14} className={activeClient.id === 'client-apex-medix' ? 'text-white' : 'text-purple-400'} />
-                  <span>Medix Diagnostics</span>
+                <div className="flex items-center justify-between w-full">
+                  <span className="flex items-center gap-2 font-black text-white text-xs truncate">
+                    <Stethoscope size={14} className={activeClient.id === 'client-apex-medix' ? 'text-indigo-400' : 'text-purple-400'} />
+                    <span>Medix Diagnostics</span>
+                  </span>
+                  {activeClient.id === 'client-apex-medix' && (
+                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping shrink-0" />
+                  )}
                 </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 font-mono font-bold whitespace-nowrap">
-                  DPDP & Debt
-                </span>
+                <div className="flex items-center justify-between pt-1.5 border-t border-gray-800/60 text-[10px]">
+                  <span className="text-gray-500 font-mono">Primary Risk:</span>
+                  <span className="px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 font-mono font-bold whitespace-nowrap">
+                    DPDP & Debt Lag
+                  </span>
+                </div>
               </button>
 
+              {/* Button 4: Stark Energy */}
               <button
                 type="button"
                 onClick={() => onSelectClient ? onSelectClient('client-stark') : router.push(`/dashboard?client=client-stark&tab=situational`)}
-                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center justify-between sm:justify-start gap-2.5 ${
+                className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all cursor-pointer border flex flex-col justify-between gap-2.5 ${
                   activeClient.id === 'client-stark'
-                    ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400'
-                    : 'bg-gray-950/80 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+                    ? 'bg-indigo-600/25 border-indigo-500 text-white shadow-lg shadow-indigo-600/20 ring-1 ring-indigo-500'
+                    : 'bg-gray-950/60 border-gray-800 text-gray-400 hover:text-white hover:border-gray-700 hover:bg-gray-900'
                 }`}
               >
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <Zap size={14} className={activeClient.id === 'client-stark' ? 'text-white' : 'text-emerald-400'} />
-                  <span>Stark Energy</span>
+                <div className="flex items-center justify-between w-full">
+                  <span className="flex items-center gap-2 font-black text-white text-xs truncate">
+                    <Zap size={14} className={activeClient.id === 'client-stark' ? 'text-indigo-400' : 'text-emerald-400'} />
+                    <span>Stark Energy</span>
+                  </span>
+                  {activeClient.id === 'client-stark' && (
+                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping shrink-0" />
+                  )}
                 </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 font-mono font-bold whitespace-nowrap">
-                  Flush & Safe
-                </span>
+                <div className="flex items-center justify-between pt-1.5 border-t border-gray-800/60 text-[10px]">
+                  <span className="text-gray-500 font-mono">Primary Risk:</span>
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 font-mono font-bold whitespace-nowrap">
+                    Flush & Resilient
+                  </span>
+                </div>
               </button>
             </div>
           </div>
