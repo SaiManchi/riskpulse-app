@@ -5434,6 +5434,8 @@ function SituationalTab({
               <span className="font-bold text-gray-300 whitespace-nowrap">Live Client Baseline:</span>
               <span className="font-extrabold text-white bg-gray-800 px-2 py-0.5 rounded whitespace-nowrap">{activeClient.name}</span>
               <span className="text-gray-600">•</span>
+              <span className="whitespace-nowrap">Revenue: <strong className="text-white">${activeClient.financialMetrics.monthly_revenue.toLocaleString()}/mo</strong></span>
+              <span className="text-gray-600">•</span>
               <span className="whitespace-nowrap">Cash: <strong className="text-white">${activeClient.financialMetrics.cash_balance.toLocaleString()}</strong></span>
               <span className="text-gray-600">•</span>
               <span className="whitespace-nowrap">Runway: <strong className="text-white">{(computed?.cashRunway ?? 0).toFixed(1)} mo</strong></span>
