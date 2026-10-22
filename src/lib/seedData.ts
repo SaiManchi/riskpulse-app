@@ -409,8 +409,8 @@ function generatePredefinedScenarios(): Scenario[] {
   result.push(
     {
       id: 'sc-medix-dpdp-act',
-      title: 'India DPDP Act 2023: Health Biometric Breach & Statutory Fines',
-      category: 'Combined',
+      title: 'Gaps in Patient Data Security (DPDP Act Statutory Fines)',
+      category: 'Cybersecurity',
       description: 'Triggered by unencrypted patient health reports, shared collection-center workstations, and disabled MFA under India DPDP Act 2023 Section 33.',
       urgency: 'Critical',
       conditions: [
@@ -438,7 +438,7 @@ function generatePredefinedScenarios(): Scenario[] {
     },
     {
       id: 'sc-medix-reagent-debt',
-      title: 'Proprietary Analyzer Lease Squeeze: Siemens Reagent Lock-in',
+      title: 'Dependence on One Equipment Supplier (Siemens Analyzer Lock-in)',
       category: 'Operational',
       description: 'Triggered when exclusive medical device covenants lock 48% of OpEx into proprietary consumables with high monthly lease debt ($14,500/mo).',
       urgency: 'High',
@@ -465,7 +465,7 @@ function generatePredefinedScenarios(): Scenario[] {
     },
     {
       id: 'sc-medix-panel-receivables',
-      title: 'Hospital Panel & TPA Health Insurance Receivables Lag (34% Overdue)',
+      title: 'Delayed Hospital Payments & Panel Receivables (34% Overdue)',
       category: 'Financial',
       description: 'Triggered when government health schemes (CGHS/EHS) and corporate hospital panels delay diagnostic test reimbursements past 60 days.',
       urgency: 'High',

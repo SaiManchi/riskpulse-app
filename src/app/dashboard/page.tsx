@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -5137,38 +5137,56 @@ function SituationalTab({
 
     // 1. Medix Diagnostics (Indian Clinical Pathology & Healthcare)
     if (clientId === 'client-apex-medix' || indLower.includes('health') || indLower.includes('diag')) {
+      if (sc.id === 'sc-medix-panel-receivables') return 99;
+      if (sc.id === 'sc-medix-dpdp-act') return 98;
+      if (sc.id === 'sc-medix-reagent-debt') return 96;
       if (sc.id?.startsWith('sc-medix-') || titleLower.includes('dpdp') || titleLower.includes('biometric') || titleLower.includes('reagent') || titleLower.includes('panel') || titleLower.includes('healthcare')) {
         baseScore += 35;
       }
       if (titleLower.includes('scada') || titleLower.includes('manufacturing') || titleLower.includes('retail') || titleLower.includes('pos terminal')) {
         baseScore -= 45;
       }
+      if (!sc.id?.startsWith('sc-medix-')) {
+        baseScore = Math.min(baseScore, 91);
+      }
     }
     // 2. Acme Industrial (Manufacturing & Industrial Tools)
     else if (clientId === 'client-acme' || indLower.includes('manufact')) {
+      if (sc.id === 'sc-acme-scada-lockout') return 99;
       if (sc.id === 'sc-acme-scada-lockout' || titleLower.includes('scada') || titleLower.includes('machinery') || titleLower.includes('manufacturing') || titleLower.includes('cnc')) {
         baseScore += 35;
       }
       if (titleLower.includes('dpdp') || titleLower.includes('retail') || titleLower.includes('pos terminal') || titleLower.includes('health')) {
         baseScore -= 45;
       }
+      if (sc.id !== 'sc-acme-scada-lockout') {
+        baseScore = Math.min(baseScore, 91);
+      }
     }
     // 3. Apex Retail Stores (Consumer Retail & Overseas Supply)
     else if (clientId === 'client-apex' || indLower.includes('retail')) {
+      if (sc.id === 'sc-apex-retail-monopoly' || sc.id?.startsWith('sc-apex-retail-')) return 99;
       if (sc.id?.startsWith('sc-apex-retail-') || titleLower.includes('supplier monopoly') || titleLower.includes('pos terminal') || titleLower.includes('retail') || titleLower.includes('cargo')) {
         baseScore += 35;
       }
       if (titleLower.includes('dpdp') || titleLower.includes('scada') || titleLower.includes('manufacturing') || titleLower.includes('health')) {
         baseScore -= 45;
       }
+      if (!sc.id?.startsWith('sc-apex-retail-')) {
+        baseScore = Math.min(baseScore, 91);
+      }
     }
     // 4. Stark Energy (CleanTech & Energy Grid)
     else if (clientId === 'client-stark' || indLower.includes('energy') || indLower.includes('clean')) {
+      if (sc.id === 'sc-stark-grid-compliance') return 99;
       if (sc.id === 'sc-stark-grid-compliance' || titleLower.includes('grid') || titleLower.includes('energy') || titleLower.includes('cleantech')) {
         baseScore += 35;
       }
       if (titleLower.includes('dpdp') || titleLower.includes('scada') || titleLower.includes('supplier monopoly')) {
         baseScore -= 45;
+      }
+      if (sc.id !== 'sc-stark-grid-compliance') {
+        baseScore = Math.min(baseScore, 91);
       }
     }
 
@@ -5183,7 +5201,13 @@ function SituationalTab({
 
   // Filtered and sorted scenarios
   const filteredScenarios = scenariosList.filter((sc: any) => {
-    const matchesCat = scenarioCategory === 'All' || sc.category?.toLowerCase() === scenarioCategory.toLowerCase();
+    let matchesCat = scenarioCategory === 'All' || sc.category?.toLowerCase() === scenarioCategory.toLowerCase();
+    if (scenarioCategory === 'Cybersecurity' && (sc.id === 'sc-medix-dpdp-act' || sc.category?.toLowerCase() === 'combined')) {
+      matchesCat = true;
+    }
+    if (scenarioCategory === 'Combined' && sc.id === 'sc-medix-dpdp-act') {
+      matchesCat = true;
+    }
     const matchesUrg = scenarioUrgency === 'All' || sc.urgency?.toLowerCase() === scenarioUrgency.toLowerCase();
     const q = scenarioSearch.trim().toLowerCase();
     const matchesSearch = !q || 
@@ -5194,11 +5218,32 @@ function SituationalTab({
     return matchesCat && matchesUrg && matchesSearch;
   });
 
+  const getSignaturePriority = (sc: any) => {
+    if (activeClient.id === 'client-apex-medix') {
+      if (sc.id === 'sc-medix-panel-receivables') return 100;
+      if (sc.id === 'sc-medix-dpdp-act') return 99;
+      if (sc.id === 'sc-medix-reagent-debt') return 98;
+    } else if (activeClient.id === 'client-acme') {
+      if (sc.id === 'sc-acme-scada-lockout') return 100;
+    } else if (activeClient.id === 'client-apex') {
+      if (sc.id === 'sc-apex-retail-monopoly' || sc.id?.startsWith('sc-apex-retail-')) return 100;
+    } else if (activeClient.id === 'client-stark') {
+      if (sc.id === 'sc-stark-grid-compliance') return 100;
+    }
+    return 0;
+  };
+
   const sortedScenarios = [...filteredScenarios].sort((a: any, b: any) => {
     if (scenarioSort === 'match') {
+      const pA = getSignaturePriority(a);
+      const pB = getSignaturePriority(b);
+      if (pA !== pB) return pB - pA;
       return calculateScenarioMatch(b) - calculateScenarioMatch(a);
     }
     if (scenarioSort === 'urgency') {
+      const pA = getSignaturePriority(a);
+      const pB = getSignaturePriority(b);
+      if (pA !== pB) return pB - pA;
       const order: Record<string, number> = { Critical: 4, High: 3, Medium: 2, Low: 1 };
       return (order[b.urgency] || 0) - (order[a.urgency] || 0);
     }
@@ -5211,10 +5256,185 @@ function SituationalTab({
   const scenarioCounts = {
     All: scenariosList.length,
     Financial: scenariosList.filter(s => s.category?.toLowerCase() === 'financial').length,
-    Cybersecurity: scenariosList.filter(s => s.category?.toLowerCase() === 'cybersecurity').length,
+    Cybersecurity: scenariosList.filter(s => s.category?.toLowerCase() === 'cybersecurity' || s.id === 'sc-medix-dpdp-act').length,
     Operational: scenariosList.filter(s => s.category?.toLowerCase() === 'operational').length,
-    Combined: scenariosList.filter(s => s.category?.toLowerCase() === 'combined').length
+    Combined: scenariosList.filter(s => s.category?.toLowerCase() === 'combined' || s.id === 'sc-medix-dpdp-act').length
   };
+
+  // High-Impact Spotlight Items dynamically mapped to active client
+  const spotlightItems = useMemo(() => {
+    const findSc = (id: string) => scenariosList.find((s: any) => s.id === id) || DEFAULT_SCENARIOS.find((s: any) => s.id === id);
+    
+    if (activeClient.id === 'client-apex-medix') {
+      return [
+        {
+          scenario: findSc('sc-medix-panel-receivables'),
+          categoryLabel: 'Financial Threat Vector #1',
+          matchScore: 99,
+          badgeColor: 'border-red-500/50 bg-red-950/70 text-red-300',
+          borderColor: 'border-red-500/70 hover:border-red-400',
+          glowColor: 'shadow-red-950/40 ring-1 ring-red-500/50',
+          gradientBg: 'from-red-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-red-400',
+          keyMetric: '34% Overdue Receivables • $145,000 Lag • 1.2 Mo Runway',
+          threatSummary: 'Government health schemes (CGHS/EHS) and hospital panels delaying diagnostic reimbursements past 60 days, driving working cash runway down to 1.2 months.',
+          actionText: 'Stress-Test Financial Liquidity'
+        },
+        {
+          scenario: findSc('sc-medix-dpdp-act'),
+          categoryLabel: 'Cybersecurity Threat Vector #1',
+          matchScore: 98,
+          badgeColor: 'border-purple-500/50 bg-purple-950/70 text-purple-300',
+          borderColor: 'border-purple-500/70 hover:border-purple-400',
+          glowColor: 'shadow-purple-950/40 ring-1 ring-purple-500/50',
+          gradientBg: 'from-purple-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-purple-400',
+          keyMetric: 'Disabled MFA • Unencrypted S3 Reports • ₹250 Cr Fine Risk',
+          threatSummary: 'Shared collection-center terminals, unencrypted diagnostic PDF downloads, and 9 open CVEs expose Medix to ₹250 Crore statutory penalties under India DPDP Act 2023.',
+          actionText: 'Stress-Test Data Security'
+        },
+        {
+          scenario: findSc('sc-medix-reagent-debt'),
+          categoryLabel: 'Operational Threat Vector #1',
+          matchScore: 96,
+          badgeColor: 'border-amber-500/50 bg-amber-950/70 text-amber-300',
+          borderColor: 'border-amber-500/70 hover:border-amber-400',
+          glowColor: 'shadow-amber-950/40 ring-1 ring-amber-500/50',
+          gradientBg: 'from-amber-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-amber-400',
+          keyMetric: '48% OpEx Locked to Siemens • $14,500/mo Lease • 70% Test Capacity',
+          threatSummary: 'Exclusive Siemens reagent covenants lock 48% of OpEx; missing two consecutive equipment lease EMIs triggers remote shutdown of Atellica analyzers halting 70% of patient blood assays.',
+          actionText: 'Stress-Test Supply Chain'
+        }
+      ];
+    } else if (activeClient.id === 'client-acme') {
+      return [
+        {
+          scenario: findSc('sc-acme-scada-lockout'),
+          categoryLabel: 'Cybersecurity Threat Vector #1',
+          matchScore: 99,
+          badgeColor: 'border-red-500/50 bg-red-950/70 text-red-300',
+          borderColor: 'border-red-500/70 hover:border-red-400',
+          glowColor: 'shadow-red-950/40 ring-1 ring-red-500/50',
+          gradientBg: 'from-red-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-red-400',
+          keyMetric: 'OT SCADA Exposure • Disabled MFA • $35,000/day Idling Loss',
+          threatSummary: 'CNC and PLC factory controls vulnerable to lateral ransomware movement from unsegmented corporate office networks.',
+          actionText: 'Stress-Test SCADA Network'
+        },
+        {
+          scenario: scenariosList.find((s: any) => s.id?.includes('burn') || s.title?.toLowerCase().includes('runway')) || DEFAULT_SCENARIOS[0],
+          categoryLabel: 'Financial Threat Vector #1',
+          matchScore: 88,
+          badgeColor: 'border-amber-500/50 bg-amber-950/70 text-amber-300',
+          borderColor: 'border-amber-500/70 hover:border-amber-400',
+          glowColor: 'shadow-amber-950/40 ring-1 ring-amber-500/50',
+          gradientBg: 'from-amber-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-amber-400',
+          keyMetric: '$45,000/mo Burn • 2.1 Mo Cash Buffer • 18.5% Late Invoices',
+          threatSummary: 'Working capital compression leaves little margin to absorb unplanned factory downtime.',
+          actionText: 'Stress-Test Cash Runway'
+        },
+        {
+          scenario: scenariosList.find((s: any) => s.id?.includes('supply') || s.title?.toLowerCase().includes('vendor')) || DEFAULT_SCENARIOS[1],
+          categoryLabel: 'Operational Threat Vector #1',
+          matchScore: 84,
+          badgeColor: 'border-blue-500/50 bg-blue-950/70 text-blue-300',
+          borderColor: 'border-blue-500/70 hover:border-blue-400',
+          glowColor: 'shadow-blue-950/40 ring-1 ring-blue-500/50',
+          gradientBg: 'from-blue-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-blue-400',
+          keyMetric: '35% Vendor Concentration • Raw Material Lead Time +45 Days',
+          threatSummary: 'Critical machinery components sourced from single regional supplier without dual-source backup.',
+          actionText: 'Stress-Test Supplier Chain'
+        }
+      ];
+    } else if (activeClient.id === 'client-apex') {
+      return [
+        {
+          scenario: findSc('sc-apex-retail-monopoly') || DEFAULT_SCENARIOS.find((s: any) => s.id?.startsWith('sc-apex-retail-')),
+          categoryLabel: 'Operational & Supply Vector #1',
+          matchScore: 99,
+          badgeColor: 'border-amber-500/50 bg-amber-950/70 text-amber-300',
+          borderColor: 'border-amber-500/70 hover:border-amber-400',
+          glowColor: 'shadow-amber-950/40 ring-1 ring-amber-500/50',
+          gradientBg: 'from-amber-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-amber-400',
+          keyMetric: '58% Overseas Vendor Monopoly • 3-Week Inventory Depletion Risk',
+          threatSummary: 'Critical overseas supplier monopoly threatens store shelf stock across 58% of product SKUs.',
+          actionText: 'Stress-Test Supply Monopoly'
+        },
+        {
+          scenario: scenariosList.find((s: any) => s.title?.toLowerCase().includes('pos') || s.category?.toLowerCase() === 'cybersecurity') || DEFAULT_SCENARIOS[0],
+          categoryLabel: 'Cybersecurity Threat Vector #1',
+          matchScore: 86,
+          badgeColor: 'border-purple-500/50 bg-purple-950/70 text-purple-300',
+          borderColor: 'border-purple-500/70 hover:border-purple-400',
+          glowColor: 'shadow-purple-950/40 ring-1 ring-purple-500/50',
+          gradientBg: 'from-purple-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-purple-400',
+          keyMetric: '12 Retail Branches • PCI-DSS Audit Gap • POS Terminal Vulnerability',
+          threatSummary: 'Point-of-sale checkout terminals susceptible to firmware tampers during seasonal traffic spikes.',
+          actionText: 'Stress-Test POS Infrastructure'
+        },
+        {
+          scenario: scenariosList.find((s: any) => s.category?.toLowerCase() === 'financial') || DEFAULT_SCENARIOS[1],
+          categoryLabel: 'Financial Threat Vector #1',
+          matchScore: 82,
+          badgeColor: 'border-red-500/50 bg-red-950/70 text-red-300',
+          borderColor: 'border-red-500/70 hover:border-red-400',
+          glowColor: 'shadow-red-950/40 ring-1 ring-red-500/50',
+          gradientBg: 'from-red-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-red-400',
+          keyMetric: 'Inventory Carrying Cost $180,000 • Slow-Moving SKU Drag',
+          threatSummary: 'Working capital locked in retail floor stock as seasonal clearance discounts erode gross margins.',
+          actionText: 'Stress-Test Retail Inventory'
+        }
+      ];
+    } else {
+      return [
+        {
+          scenario: findSc('sc-stark-grid-compliance') || DEFAULT_SCENARIOS[0],
+          categoryLabel: 'Regulatory & Grid Vector #1',
+          matchScore: 99,
+          badgeColor: 'border-emerald-500/50 bg-emerald-950/70 text-emerald-300',
+          borderColor: 'border-emerald-500/70 hover:border-emerald-400',
+          glowColor: 'shadow-emerald-950/40 ring-1 ring-emerald-500/50',
+          gradientBg: 'from-emerald-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-emerald-400',
+          keyMetric: 'ISO/RTO Interconnection Audit • $250k Compliance Penalty Risk',
+          threatSummary: 'CleanTech solar and battery storage systems require continuous regulatory telemetry reporting to prevent grid curtailment.',
+          actionText: 'Stress-Test Grid Compliance'
+        },
+        {
+          scenario: scenariosList.find((s: any) => s.category?.toLowerCase() === 'cybersecurity') || DEFAULT_SCENARIOS[1],
+          categoryLabel: 'Cybersecurity Threat Vector #1',
+          matchScore: 80,
+          badgeColor: 'border-purple-500/50 bg-purple-950/70 text-purple-300',
+          borderColor: 'border-purple-500/70 hover:border-purple-400',
+          glowColor: 'shadow-purple-950/40 ring-1 ring-purple-500/50',
+          gradientBg: 'from-purple-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-purple-400',
+          keyMetric: 'Substation Inverter SCADA • Cloud Telemetry Ingress',
+          threatSummary: 'Remote solar inverter monitoring nodes require zero-trust access to prevent generation shutdowns.',
+          actionText: 'Stress-Test Inverter Network'
+        },
+        {
+          scenario: scenariosList.find((s: any) => s.category?.toLowerCase() === 'financial') || DEFAULT_SCENARIOS[2],
+          categoryLabel: 'Financial Threat Vector #1',
+          matchScore: 78,
+          badgeColor: 'border-blue-500/50 bg-blue-950/70 text-blue-300',
+          borderColor: 'border-blue-500/70 hover:border-blue-400',
+          glowColor: 'shadow-blue-950/40 ring-1 ring-blue-500/50',
+          gradientBg: 'from-blue-950/30 via-gray-900 to-gray-950',
+          accentColor: 'text-blue-400',
+          keyMetric: 'CapEx Equipment Amortization • Federal Tax Credit Timing',
+          threatSummary: 'Clean energy capital deployment cycles create short-term cash flow volatility.',
+          actionText: 'Stress-Test CapEx Model'
+        }
+      ];
+    }
+  }, [activeClient.id, scenariosList]);
 
   // Filter playbooks based on category and search query
   const filteredPlaybooks = DEFAULT_PLAYBOOKS.filter(pb => {
@@ -5450,6 +5670,93 @@ function SituationalTab({
             </div>
           </div>
 
+          {/* Priority Threat Spotlight: The 3 Primary Vulnerability Vectors */}
+          <div className="bg-gradient-to-b from-gray-900 via-gray-900/95 to-gray-950 border-2 border-indigo-500/40 rounded-2xl p-5 shadow-2xl relative overflow-hidden space-y-4 font-sans">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10 border-b border-gray-800/80 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/20 via-purple-500/20 to-amber-500/20 border border-indigo-500/40 flex items-center justify-center text-white shrink-0 shadow-lg">
+                  <AlertTriangle size={20} className="text-amber-400 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <h4 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
+                      Priority Threat Spotlight • {activeClient.name}
+                    </h4>
+                    <span className="text-[10px] bg-red-950/90 text-red-300 border border-red-700/70 px-2.5 py-0.5 rounded-full font-mono font-black uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
+                      Executive Exposure
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 font-medium mt-0.5">
+                    Real-time telemetry correlation isolated these 3 critical vulnerabilities as immediate operational & financial threats:
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-mono text-gray-400 bg-gray-950 border border-gray-800 px-3 py-1.5 rounded-xl self-start sm:self-center">
+                3 Signature Vectors
+              </span>
+            </div>
+
+            {/* 3 Prominent Threat Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 relative z-10">
+              {spotlightItems.map((item, idx) => {
+                if (!item.scenario) return null;
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setSelectedLibScenario(item.scenario);
+                      setLiveAnalysisData(null);
+                      setLiveAnalysisLoading(false);
+                    }}
+                    className={`bg-gradient-to-br ${item.gradientBg} border-2 ${item.borderColor} ${item.glowColor} rounded-2xl p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer group hover:-translate-y-1 shadow-xl`}
+                  >
+                    <div className="space-y-3">
+                      {/* Top Badges */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-[10px] font-black border px-2.5 py-0.5 rounded-full uppercase tracking-wider ${item.badgeColor}`}>
+                          {item.categoryLabel}
+                        </span>
+                        <span className={`text-[11px] font-black font-mono px-2 py-0.5 rounded bg-gray-950/80 border border-gray-800 ${item.accentColor}`}>
+                          {item.matchScore}% Match
+                        </span>
+                      </div>
+
+                      {/* Title */}
+                      <h5 className="font-extrabold text-sm text-white group-hover:text-indigo-300 transition-colors leading-snug">
+                        {item.scenario.title}
+                      </h5>
+
+                      {/* Telemetry Metric Callout Box */}
+                      <div className="bg-gray-955/90 border border-gray-800 p-2.5 rounded-xl space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Telemetry Exposure:</span>
+                        <p className={`text-xs font-black font-mono ${item.accentColor}`}>
+                          {item.keyMetric}
+                        </p>
+                      </div>
+
+                      {/* Threat Summary */}
+                      <p className="text-xs text-gray-300 font-normal leading-relaxed line-clamp-3">
+                        {item.threatSummary}
+                      </p>
+                    </div>
+
+                    {/* Footer Button */}
+                    <div className="pt-3 mt-3 border-t border-gray-800/80 flex items-center justify-between">
+                      <span className={`text-xs font-bold ${item.accentColor} group-hover:underline flex items-center gap-1.5`}>
+                        {item.actionText}
+                        <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                      </span>
+                      <span className="text-[10px] text-gray-500 font-mono">Run AI Audit</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Search, Filter & Sort Controls */}
           <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-xl space-y-4">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
@@ -5550,6 +5857,29 @@ function SituationalTab({
                 const isHighRisk = matchScore >= 70;
                 const isMediumRisk = matchScore >= 40 && matchScore < 70;
                 
+                const isDelayedPayments = sc.id === 'sc-medix-panel-receivables';
+                const isPatientSecurity = sc.id === 'sc-medix-dpdp-act';
+                const isSupplierDependence = sc.id === 'sc-medix-reagent-debt';
+                const isMedixSignature = activeClient.id === 'client-apex-medix' && (isDelayedPayments || isPatientSecurity || isSupplierDependence);
+                const isAcmeSignature = activeClient.id === 'client-acme' && sc.id === 'sc-acme-scada-lockout';
+                const isApexSignature = activeClient.id === 'client-apex' && (sc.id === 'sc-apex-retail-monopoly' || sc.id?.startsWith('sc-apex-retail-'));
+                const isStarkSignature = activeClient.id === 'client-stark' && sc.id === 'sc-stark-grid-compliance';
+                const isClientSignature = isMedixSignature || isAcmeSignature || isApexSignature || isStarkSignature;
+
+                const cardBorderClass = isDelayedPayments
+                  ? 'border-2 border-rose-500/90 bg-gradient-to-b from-rose-950/30 via-gray-900 to-gray-950 shadow-2xl shadow-rose-950/50 ring-2 ring-rose-500/60 hover:border-rose-400'
+                  : isPatientSecurity
+                  ? 'border-2 border-purple-500/90 bg-gradient-to-b from-purple-950/30 via-gray-900 to-gray-950 shadow-2xl shadow-purple-950/50 ring-2 ring-purple-500/60 hover:border-purple-400'
+                  : isSupplierDependence
+                  ? 'border-2 border-amber-500/90 bg-gradient-to-b from-amber-950/30 via-gray-900 to-gray-950 shadow-2xl shadow-amber-950/50 ring-2 ring-amber-500/60 hover:border-amber-400'
+                  : isClientSignature
+                  ? 'border-2 border-indigo-500/90 bg-gradient-to-b from-indigo-950/30 via-gray-900 to-gray-950 shadow-2xl shadow-indigo-950/50 ring-2 ring-indigo-500/60 hover:border-indigo-400'
+                  : isHighRisk
+                  ? 'border-red-900/40 hover:border-red-500/70 hover:shadow-red-950/20'
+                  : isMediumRisk
+                  ? 'border-amber-900/40 hover:border-amber-500/70 hover:shadow-amber-950/20'
+                  : 'border-gray-800 hover:border-indigo-500/60 hover:shadow-indigo-950/20';
+
                 return (
                   <div
                     key={sc.id}
@@ -5558,15 +5888,47 @@ function SituationalTab({
                       setLiveAnalysisData(null);
                       setLiveAnalysisLoading(false);
                     }}
-                    className={`bg-gray-900 border rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all duration-200 cursor-pointer group hover:-translate-y-0.5 ${
-                      isHighRisk
-                        ? 'border-red-900/40 hover:border-red-500/70 hover:shadow-red-950/20'
-                        : isMediumRisk
-                        ? 'border-amber-900/40 hover:border-amber-500/70 hover:shadow-amber-950/20'
-                        : 'border-gray-800 hover:border-indigo-500/60 hover:shadow-indigo-950/20'
-                    }`}
+                    className={`bg-gray-900 border rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all duration-200 cursor-pointer group hover:-translate-y-1 relative overflow-hidden ${cardBorderClass}`}
                   >
                     <div className="space-y-3">
+                      {/* Priority Vector Top Highlight Banner */}
+                      {isDelayedPayments && (
+                        <div className="bg-rose-950/90 border-b border-rose-700/60 -mx-5 -mt-5 px-4 py-2 rounded-t-2xl flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-rose-300 shadow">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping inline-block" />
+                            <span>Top Financial Threat • Delayed Hospital Receivables</span>
+                          </span>
+                          <span className="font-mono text-rose-200 bg-rose-900/80 px-2 py-0.5 rounded text-[9px]">Rank #1 Match</span>
+                        </div>
+                      )}
+                      {isPatientSecurity && (
+                        <div className="bg-purple-950/90 border-b border-purple-700/60 -mx-5 -mt-5 px-4 py-2 rounded-t-2xl flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-purple-300 shadow">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping inline-block" />
+                            <span>Top Cybersecurity Vector • Gaps in Patient Data Security</span>
+                          </span>
+                          <span className="font-mono text-purple-200 bg-purple-900/80 px-2 py-0.5 rounded text-[9px]">Rank #1 Match</span>
+                        </div>
+                      )}
+                      {isSupplierDependence && (
+                        <div className="bg-amber-950/90 border-b border-amber-700/60 -mx-5 -mt-5 px-4 py-2 rounded-t-2xl flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-amber-300 shadow">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
+                            <span>Top Operational Vector • Equipment Supplier Monopoly</span>
+                          </span>
+                          <span className="font-mono text-amber-200 bg-amber-900/80 px-2 py-0.5 rounded text-[9px]">Rank #1 Match</span>
+                        </div>
+                      )}
+                      {isClientSignature && !isDelayedPayments && !isPatientSecurity && !isSupplierDependence && (
+                        <div className="bg-indigo-950/90 border-b border-indigo-700/60 -mx-5 -mt-5 px-4 py-2 rounded-t-2xl flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-indigo-300 shadow">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping inline-block" />
+                            <span>Primary Telemetry Vulnerability</span>
+                          </span>
+                          <span className="font-mono text-indigo-200 bg-indigo-900/80 px-2 py-0.5 rounded text-[9px]">Rank #1 Match</span>
+                        </div>
+                      )}
+
                       {/* Badges Row */}
                       <div className="flex justify-between items-center gap-2">
                         <span className={`text-[9px] font-black border px-2.5 py-0.5 rounded-full uppercase tracking-wider ${getCategoryBadge(sc.category)}`}>
@@ -5578,7 +5940,13 @@ function SituationalTab({
                       </div>
 
                       {/* Title */}
-                      <h4 className="text-sm font-extrabold text-white group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
+                      <h4 className={`text-sm font-extrabold transition-colors line-clamp-2 leading-snug ${
+                        isDelayedPayments ? 'text-white group-hover:text-rose-300' :
+                        isPatientSecurity ? 'text-white group-hover:text-purple-300' :
+                        isSupplierDependence ? 'text-white group-hover:text-amber-300' :
+                        isClientSignature ? 'text-white group-hover:text-indigo-300' :
+                        'text-white group-hover:text-indigo-400'
+                      }`}>
                         {sc.title}
                       </h4>
 
@@ -5587,6 +5955,9 @@ function SituationalTab({
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-gray-400 font-bold">Client Threat Correlation:</span>
                           <span className={`font-black ${
+                            isDelayedPayments ? 'text-rose-400' :
+                            isPatientSecurity ? 'text-purple-400' :
+                            isSupplierDependence ? 'text-amber-400' :
                             isHighRisk ? 'text-red-400' : isMediumRisk ? 'text-amber-400' : 'text-indigo-400'
                           }`}>
                             {matchScore}% Match
@@ -5595,6 +5966,9 @@ function SituationalTab({
                         <div className="w-full h-1.5 bg-gray-850 rounded-full overflow-hidden">
                           <div
                             className={`h-full transition-all duration-300 ${
+                              isDelayedPayments ? 'bg-rose-500' :
+                              isPatientSecurity ? 'bg-purple-500' :
+                              isSupplierDependence ? 'bg-amber-500' :
                               isHighRisk ? 'bg-red-500' : isMediumRisk ? 'bg-amber-500' : 'bg-indigo-500'
                             }`}
                             style={{ width: `${matchScore}%` }}
@@ -5602,9 +5976,19 @@ function SituationalTab({
                         </div>
                         <div className="text-[9px] text-gray-500 font-semibold flex items-center justify-between">
                           <span className="flex items-center gap-1.5 font-bold">
-                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isHighRisk ? 'bg-red-400' : isMediumRisk ? 'bg-amber-400' : 'bg-indigo-400'}`} />
-                            <span className={isHighRisk ? 'text-red-400' : isMediumRisk ? 'text-amber-400' : 'text-gray-400'}>
-                              {isHighRisk ? 'Critical Exposure' : isMediumRisk ? 'Moderate Impact' : 'Low Correlation'}
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                              isDelayedPayments ? 'bg-rose-400' :
+                              isPatientSecurity ? 'bg-purple-400' :
+                              isSupplierDependence ? 'bg-amber-400' :
+                              isHighRisk ? 'bg-red-400' : isMediumRisk ? 'bg-amber-400' : 'bg-indigo-400'
+                            }`} />
+                            <span className={
+                              isDelayedPayments ? 'text-rose-400' :
+                              isPatientSecurity ? 'text-purple-400' :
+                              isSupplierDependence ? 'text-amber-400' :
+                              isHighRisk ? 'text-red-400' : isMediumRisk ? 'text-amber-400' : 'text-gray-400'
+                            }>
+                              {isClientSignature ? 'Critical Exposure Vector' : isHighRisk ? 'Critical Exposure' : isMediumRisk ? 'Moderate Impact' : 'Low Correlation'}
                             </span>
                           </span>
                           <span className="text-gray-400">{activeClient.name}</span>
@@ -5645,8 +6029,13 @@ function SituationalTab({
 
                     {/* Card Footer */}
                     <div className="border-t border-gray-850/80 pt-3 mt-4 flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-indigo-400 group-hover:underline flex items-center gap-1">
-                        Inspect Situation & Run AI Audit
+                      <span className={`text-[10px] font-bold ${
+                        isDelayedPayments ? 'text-rose-400' :
+                        isPatientSecurity ? 'text-purple-400' :
+                        isSupplierDependence ? 'text-amber-400' :
+                        'text-indigo-400'
+                      } group-hover:underline flex items-center gap-1`}>
+                        {isClientSignature ? 'Inspect Priority Threat & Run AI Audit' : 'Inspect Situation & Run AI Audit'}
                         <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                       </span>
                       <span className="text-[9px] text-gray-500 font-mono">
